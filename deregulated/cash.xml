@@ -1,0 +1,63 @@
+<Economics verbosity="50">
+  <Global>
+    <DiscountRate>0.08</DiscountRate>
+    <tax>0.25</tax>
+    <inflation>0.025</inflation>
+    <Indicator name="NPV" target="0">Additional_NPP|capex
+      grid|grid_sales
+      NPP_unused|unused_cost
+      TES|capex</Indicator>
+    <ProjectTime>1</ProjectTime>
+  </Global>
+
+  <Component name="Additional_NPP">
+    <Life_time>60</Life_time>
+    <CashFlows>
+      <Capex name="capex" tax="True" inflation="none" mult_target="False">
+        <driver>_Additional_NPP_driver</driver>
+        <alpha>-240000000.0</alpha>
+        <reference>0.18182</reference>
+        <X>0.85</X>
+        <depreciation scheme="MACRS">15</depreciation>
+      </Capex>
+    </CashFlows>
+  </Component>
+
+  <Component name="turbine">
+    <Life_time>1</Life_time>
+    <CashFlows />
+  </Component>
+
+  <Component name="grid">
+    <Life_time>1</Life_time>
+    <CashFlows>
+      <Recurring name="grid_sales" tax="True" inflation="none" mult_target="False">
+        <driver>_rec_hour_Activity_grid_grid_sales</driver>
+        <alpha>-1.0</alpha>
+      </Recurring>
+    </CashFlows>
+  </Component>
+
+  <Component name="NPP_unused">
+    <Life_time>1</Life_time>
+    <CashFlows>
+      <Recurring name="unused_cost" tax="True" inflation="none" mult_target="False">
+        <driver>_rec_hour_Activity_NPP_unused_unused_cost</driver>
+        <alpha>-1.0</alpha>
+      </Recurring>
+    </CashFlows>
+  </Component>
+
+  <Component name="TES">
+    <Life_time>30</Life_time>
+    <CashFlows>
+      <Capex name="capex" tax="True" inflation="none" mult_target="False">
+        <driver>_TES_driver</driver>
+        <alpha>-199000000.0</alpha>
+        <reference>1</reference>
+        <X>1</X>
+        <depreciation scheme="MACRS">15</depreciation>
+      </Capex>
+    </CashFlows>
+  </Component>
+</Economics>
