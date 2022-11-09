@@ -1,0 +1,18 @@
+<DataObjectMetadata name="synth">
+  <DataSet type="Static">
+    <dims>
+      <PRICE>YEAR,HOUR</PRICE>
+      <SOLAR>YEAR,HOUR</SOLAR>
+      <TOTALLOAD>YEAR,HOUR</TOTALLOAD>
+      <WIND>YEAR,HOUR</WIND>
+    </dims>
+    <general>
+      <datasetName>synth</datasetName>
+      <inputs>scaling</inputs>
+      <outputs>TOTALLOAD,PRICE,WIND,SOLAR</outputs>
+      <pointwise_meta>PointProbability,ProbabilityWeight,prefix</pointwise_meta>
+      <sampleTag>RAVEN_sample_ID</sampleTag>
+    </general>
+  </DataSet>
+  
+</DataObjectMetadata>
