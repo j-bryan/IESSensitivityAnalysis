@@ -1,6 +1,6 @@
 <HERON>
   <!-- We used 6 hour storage media cost per unit energy reference for TES -->
-  <Case name="Morris">
+  <Case name="TES_LowCost">
     <label name="region">MISO</label>
     <mode>sweep</mode>
     <debug>
@@ -288,7 +288,7 @@
             <activity tracking="charge">heat</activity>
           </driver>
           <reference_price>
-            <sweep_values debug_value="-15">-3, -29</sweep_values>  <!-- $/MWh_th (Hill, 2022) -->
+            <!-- <sweep_values debug_value="-15">-3, -29</sweep_values>  $/MWh_th (Hill, 2022) -->
             <fixed_value>-3</fixed_value>
 <!--            <fixed_value>-29</fixed_value>-->
           </reference_price>
