@@ -1,6 +1,6 @@
 <HERON>
   <!-- We used 6 hour storage media cost per unit energy reference for TES -->
-  <Case name="Morris">
+  <Case name="TES_HiCost">
     <label name="region">MISO</label>
     <mode>sweep</mode>
     <debug>

@@ -1,13 +1,13 @@
 <HERON>
   <!-- We used 6 hour storage media cost per unit energy reference for TES -->
-  <Case name="Morris">
+  <Case name="Baseline_HiCost">
     <label name="region">MISO</label>
     <mode>sweep</mode>
-    <debug>
-          <inner_samples>1</inner_samples>
-          <macro_steps>1</macro_steps>
-          <dispatch_plot>True</dispatch_plot>
-    </debug>
+<!--    <debug>-->
+<!--          <inner_samples>1</inner_samples>-->
+<!--          <macro_steps>1</macro_steps>-->
+<!--          <dispatch_plot>True</dispatch_plot>-->
+<!--    </debug>-->
     <num_arma_samples>1</num_arma_samples>
 <!--    <parallel>-->
 <!--      <outer>4</outer>-->
@@ -38,7 +38,8 @@
     <Component name="NPP">
       <produces resource="heat" dispatch="fixed">
         <capacity resource="heat">
-          <sweep_values debug_value="0.834">0.6, 0.7, 0.8, 0.9, 1.0</sweep_values>
+<!--          <sweep_values debug_value="0.834">0.6, 0.7, 0.8, 0.9, 1.0</sweep_values>-->
+          <fixed_value>0.834</fixed_value>
         </capacity>
       </produces>
       <economics>
