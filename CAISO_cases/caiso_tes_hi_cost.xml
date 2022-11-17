@@ -1,7 +1,7 @@
 <HERON>
   <!-- We used 6 hour storage media cost per unit energy reference for TES -->
-  <Case name="MISO_TES_HiCost">
-    <label name="region">MISO</label>
+  <Case name="CAISO_TES_HiCost">
+    <label name="region">CAISO</label>
     <mode>sweep</mode>
     <debug>
           <inner_samples>1</inner_samples>
@@ -16,8 +16,8 @@
     <time_discretization>
       <year_variable>YEAR</year_variable>
       <time_variable>HOUR</time_variable>
-      <end_time>364</end_time>
-      <num_steps>365</num_steps>
+      <end_time>145</end_time>
+      <num_steps>146</num_steps>
     </time_discretization>
     <economics>
       <ProjectTime>1</ProjectTime>
@@ -28,7 +28,7 @@
     </economics>
     <dispatcher>
       <pyomo>
-        <rolling_window_length>365</rolling_window_length>
+        <rolling_window_length>146</rolling_window_length>
       </pyomo>
     </dispatcher>
   </Case>
@@ -305,6 +305,6 @@
   </Components>
 
   <DataGenerators>
-    <ARMA name="synth" variable="TOTALLOAD,WIND,SOLAR,PRICE" evalMode="clustered">../ARMA/MISO/arma.pk</ARMA>
+    <ARMA name="synth" variable="TOTALLOAD,WIND,SOLAR,PRICE" evalMode="clustered">../ARMA/CAISO/arma.pk</ARMA>
   </DataGenerators>
 </HERON>

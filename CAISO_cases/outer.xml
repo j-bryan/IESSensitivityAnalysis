@@ -1,0 +1,112 @@
+<Simulation verbosity="all">
+  <RunInfo>
+    <JobName>CAISO_TES_LowCost_o</JobName>
+    <WorkingDir>CAISO_TES_LowCost_o</WorkingDir>
+    <Sequence>debug, debug_output</Sequence>
+    <batchSize>1</batchSize>
+  </RunInfo>
+
+  <Steps>
+    <MultiRun name="debug">
+      <Input class="Files" type="raven">inner_workflow</Input>
+      <Input class="Files" type="">heron_lib</Input>
+      <Model class="Models" type="Code">raven</Model>
+      <Sampler class="Samplers" type="MonteCarlo">mc</Sampler>
+      <Output class="DataObjects" type="DataSet">dispatch</Output>
+      <Output class="Databases" type="NetCDF">dispatch</Output>
+    </MultiRun>
+    <IOStep name="debug_output">
+      <Input class="DataObjects" type="DataSet">dispatch</Input>
+      <Output class="OutStreams" type="Print">dispatch_print</Output>
+      <Output class="OutStreams" type="Plot">dispatchPlot</Output>
+    </IOStep>
+  </Steps>
+
+  <VariableGroups>
+    <Group name="GRO_capacities">NPP_capacity, BOP_capacity, sink_capacity, source_capacity, TES_capacity</Group>
+    <Group name="GRO_outer_results">mean_NPV, std_NPV, med_NPV, max_NPV, min_NPV, perc_5_NPV, perc_95_NPV, samp_NPV, var_NPV</Group>
+    <Group name="GRO_outer_debug_dispatch">Dispatch__NPP__production__heat, Dispatch__BOP__production__electricity, Dispatch__BOP__production__heat, Dispatch__wind__production__electricity, Dispatch__solar__production__electricity, Dispatch__grid__production__electricity, Dispatch__sink__production__electricity, Dispatch__source__production__electricity, Dispatch__TES__level__heat, Dispatch__TES__charge__heat, Dispatch__TES__discharge__heat</Group>
+    <Group name="GRO_outer_debug_synthetics">TOTALLOAD, WIND, SOLAR, PRICE</Group>
+    <Group name="GRO_case_labels">region_label</Group>
+  </VariableGroups>
+
+  <DataObjects>
+    <PointSet name="grid">
+      <Input>GRO_capacities, GRO_case_labels</Input>
+      <Output>GRO_outer_results</Output>
+    </PointSet>
+    <DataSet name="dispatch">
+      <Input>scaling</Input>
+      <Output>GRO_outer_debug_dispatch,GRO_outer_debug_synthetics</Output>
+      <Index var="HOUR">GRO_outer_debug_dispatch, GRO_outer_debug_synthetics</Index>
+      <Index var="_ROM_Cluster">GRO_outer_debug_dispatch, GRO_outer_debug_synthetics</Index>
+      <Index var="YEAR">GRO_outer_debug_dispatch, GRO_outer_debug_synthetics</Index>
+    </DataSet>
+  </DataObjects>
+
+  <Models>
+    <Code name="raven" subType="RAVEN">
+      <executable>C:\Users\A01631741\projects\raven\raven_framework</executable>
+      <outputDatabase>disp_full</outputDatabase>
+      <conversion>
+        <input source="../write_inner.py" />
+      </conversion>
+      <alias type="input" variable="denoises">Samplers|MonteCarlo@name:mc_arma_dispatch|constant@name:denoises</alias>
+      <alias type="input" variable="NPP_capacity">Samplers|MonteCarlo@name:mc_arma_dispatch|constant@name:NPP_capacity</alias>
+      <alias type="input" variable="BOP_capacity">Samplers|MonteCarlo@name:mc_arma_dispatch|constant@name:BOP_capacity</alias>
+      <alias type="input" variable="wind_capacity">Samplers|MonteCarlo@name:mc_arma_dispatch|constant@name:wind_capacity</alias>
+      <alias type="input" variable="solar_capacity">Samplers|MonteCarlo@name:mc_arma_dispatch|constant@name:solar_capacity</alias>
+      <alias type="input" variable="grid_capacity">Samplers|MonteCarlo@name:mc_arma_dispatch|constant@name:grid_capacity</alias>
+      <alias type="input" variable="sink_capacity">Samplers|MonteCarlo@name:mc_arma_dispatch|constant@name:sink_capacity</alias>
+      <alias type="input" variable="source_capacity">Samplers|MonteCarlo@name:mc_arma_dispatch|constant@name:source_capacity</alias>
+      <alias type="input" variable="TES_capacity">Samplers|MonteCarlo@name:mc_arma_dispatch|constant@name:TES_capacity</alias>
+      <alias type="input" variable="region_label">Samplers|MonteCarlo@name:mc_arma_dispatch|constant@name:region_label</alias>
+    </Code>
+  </Models>
+
+  <Distributions>
+  </Distributions>
+
+  <Samplers>
+    <MonteCarlo name="mc">
+      <constant name="denoises">1</constant>
+      <samplerInit>
+        <limit>1</limit>
+      </samplerInit>
+      <constant name="region_label">CAISO</constant>
+      <constant name="NPP_capacity">0.834</constant>
+      <constant name="BOP_capacity">0.5</constant>
+      <constant name="sink_capacity">-100000.0</constant>
+      <constant name="source_capacity">100000.0</constant>
+      <constant name="TES_capacity">2.5</constant>
+    </MonteCarlo>
+  </Samplers>
+
+  <Files>
+    <Input name="inner_workflow" type="raven">../inner.xml</Input>
+    <Input name="heron_lib">../heron.lib</Input>
+  </Files>
+
+  <OutStreams>
+    <Print name="dispatch_print">
+      <type>csv</type>
+      <source>dispatch</source>
+    </Print>
+    <Plot name="opt_path" subType="OptPath">
+      <source>opt_soln</source>
+      <vars>GRO_capacities, mean_NPV</vars>
+    </Plot>
+    <Plot name="dispatchPlot" subType="HERON.DispatchPlot">
+      <source>dispatch</source>
+      <macro_variable>YEAR</macro_variable>
+      <micro_variable>HOUR</micro_variable>
+      <signals>PRICE, WIND, TOTALLOAD, SOLAR</signals>
+    </Plot>
+  </OutStreams>
+
+  <Databases>
+    <NetCDF directory="" name="dispatch" readMode="overwrite">
+      <variables>GRO_outer_debug_dispath,GRO_outer_debug_synthetics</variables>
+    </NetCDF>
+  </Databases>
+</Simulation>

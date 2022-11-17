@@ -1,7 +1,7 @@
 <HERON>
   <!-- We used 6 hour storage media cost per unit energy reference for TES -->
-  <Case name="MISO_TES_HiCost">
-    <label name="region">MISO</label>
+  <Case name="CAISO_Baseline_LowCost">
+    <label name="region">CAISO</label>
     <mode>sweep</mode>
     <debug>
           <inner_samples>1</inner_samples>
@@ -16,8 +16,8 @@
     <time_discretization>
       <year_variable>YEAR</year_variable>
       <time_variable>HOUR</time_variable>
-      <end_time>364</end_time>
-      <num_steps>365</num_steps>
+      <end_time>145</end_time>
+      <num_steps>146</num_steps>
     </time_discretization>
     <economics>
       <ProjectTime>1</ProjectTime>
@@ -28,7 +28,7 @@
     </economics>
     <dispatcher>
       <pyomo>
-        <rolling_window_length>365</rolling_window_length>
+        <rolling_window_length>146</rolling_window_length>
       </pyomo>
     </dispatcher>
   </Case>
@@ -50,8 +50,8 @@
           </driver>
           <reference_price>
 <!--            <sweep_values debug_value="-1300">-1140, -1520</sweep_values>  &lt;!&ndash; 3000 - 4000 $/kWe @ 38% efficiency &ndash;&gt;-->
-<!--            <fixed_value>-1140</fixed_value>-->
-            <fixed_value>-1520</fixed_value>
+            <fixed_value>-1140</fixed_value>
+<!--            <fixed_value>-1520</fixed_value>-->
           </reference_price>
           <reference_driver>
             <fixed_value>1e-6</fixed_value>  <!-- kW to GW -->
@@ -64,8 +64,8 @@
           </driver>
           <reference_price>
 <!--            <sweep_values debug_value="-110">-104, -120</sweep_values>  &lt;!&ndash; 104-120 $/kWe-yr &ndash;&gt;-->
-<!--            <fixed_value>-104</fixed_value>-->
-            <fixed_value>-120</fixed_value>
+            <fixed_value>-104</fixed_value>
+<!--            <fixed_value>-120</fixed_value>-->
           </reference_price>
           <reference_driver>
             <fixed_value>1e-6</fixed_value>  <!-- kW to GW -->
@@ -77,8 +77,8 @@
           </driver>
           <reference_price>
 <!--            <sweep_values debug_value="-7">-6.6044, -8.2574</sweep_values>  &lt;!&ndash; 17.38 - 21.73 $/MWe-h @ 38% efficiency &ndash;&gt;-->
-<!--            <fixed_value>-6.6044</fixed_value>-->
-            <fixed_value>-8.2574</fixed_value>
+            <fixed_value>-6.6044</fixed_value>
+<!--            <fixed_value>-8.2574</fixed_value>-->
           </reference_price>
           <reference_driver>
             <fixed_value>1e-3</fixed_value>  <!-- MW to GW -->
@@ -113,8 +113,8 @@
           </driver>
           <reference_price>
 <!--            <sweep_values debug_value="-600">-500, -700</sweep_values>  &lt;!&ndash; $/kWe &ndash;&gt;  &lt;!&ndash; Hill et al. (2022) &ndash;&gt;-->
-<!--            <fixed_value>-500</fixed_value>-->
-            <fixed_value>-700</fixed_value>
+            <fixed_value>-500</fixed_value>
+<!--            <fixed_value>-700</fixed_value>-->
           </reference_price>
           <reference_driver>
             <fixed_value>1e-6</fixed_value>
@@ -127,8 +127,8 @@
           </driver>
           <reference_price>
 <!--            <sweep_values debug_value="-50">-40, -60</sweep_values>  &lt;!&ndash; $/kWe-yr &ndash;&gt;  &lt;!&ndash; Hill et al. (2022) &ndash;&gt;-->
-<!--            <fixed_value>-40</fixed_value>-->
-            <fixed_value>-60</fixed_value>
+            <fixed_value>-40</fixed_value>
+<!--            <fixed_value>-60</fixed_value>-->
           </reference_price>
           <reference_driver>
             <fixed_value>1e-6</fixed_value>
@@ -140,8 +140,8 @@
           </driver>
           <reference_price>
 <!--            <sweep_values debug_value="1.0">0.0,2.0</sweep_values>  &lt;!&ndash; $/MWe-h &ndash;&gt;  &lt;!&ndash; Hill et al. (2022) &ndash;&gt;-->
-<!--            <fixed_value>0</fixed_value>-->
-            <fixed_value>-2</fixed_value>
+            <fixed_value>0</fixed_value>
+<!--            <fixed_value>-2</fixed_value>-->
           </reference_price>
           <reference_driver>
             <fixed_value>1e-3</fixed_value>
@@ -245,66 +245,9 @@
       </economics>
     </Component>
 
-    <!--STORAGE COMPONENTS-->
-    <Component name="TES">
-      <stores resource="heat" dispatch="independent">
-        <capacity resource="heat">
-<!--          <sweep_values debug_value="2.5">1.5, 4.0</sweep_values>-->
-          <sweep_values debug_value="2.5">0, 2.5, 4.0</sweep_values>
-        </capacity>
-        <initial_stored>
-          <fixed_value>0</fixed_value>
-        </initial_stored>
-        <RTE>0.93</RTE>  <!-- TODO: I wish we could do <sweep_values> here! -->
-      </stores>
-      <economics>
-        <lifetime>30</lifetime>
-        <CashFlow name="capex" type="one-time" taxable="True" inflation="none" mult_target="False">
-          <driver>
-            <variable>TES_capacity</variable>
-          </driver>
-          <reference_price>
-<!--            <sweep_values debug_value="-5.0">-1.7,-10.3</sweep_values> &lt;!&ndash; 5-30 $/kWh_e (Mikkelson, 2022) @ 90% RTE, 38% BOP efficiency &ndash;&gt;-->
-<!--            <fixed_value>-1.7</fixed_value>-->
-            <fixed_value>-10.3</fixed_value>
-          </reference_price>
-          <reference_driver>
-            <fixed_value>1e-6</fixed_value>
-          </reference_driver>
-          <depreciate>15</depreciate>
-        </CashFlow>
-        <CashFlow name="FOM" type="repeating" period="year" taxable="True" inflation="none" mult_target="False">
-          <driver>
-            <variable>TES_capacity</variable>
-          </driver>
-          <reference_price>
-<!--            <sweep_values debug_value="-30">-14, -43</sweep_values>  &lt;!&ndash; $/MWh_th (Hill, 2022) &ndash;&gt;-->
-<!--            <fixed_value>-14</fixed_value>-->
-            <fixed_value>-43</fixed_value>
-          </reference_price>
-          <reference_driver>
-            <fixed_value>1e-3</fixed_value>
-          </reference_driver>
-        </CashFlow>
-        <CashFlow name="VOM" type="repeating" taxable="True" inflation="none" mult_target="False">
-          <driver>
-            <activity tracking="discharge">heat</activity>
-          </driver>
-          <reference_price>
-<!--            <sweep_values debug_value="-15">-3, -29</sweep_values>  &lt;!&ndash; $/MWh_th (Hill, 2022) &ndash;&gt;-->
-<!--            <fixed_value>-3</fixed_value>-->
-            <fixed_value>-29</fixed_value>
-          </reference_price>
-          <reference_driver>
-            <fixed_value>1e-3</fixed_value>
-          </reference_driver>
-        </CashFlow>
-      </economics>
-    </Component>
-
   </Components>
 
   <DataGenerators>
-    <ARMA name="synth" variable="TOTALLOAD,WIND,SOLAR,PRICE" evalMode="clustered">../ARMA/MISO/arma.pk</ARMA>
+    <ARMA name="synth" variable="TOTALLOAD,WIND,SOLAR,PRICE" evalMode="clustered">../ARMA/CAISO/arma.pk</ARMA>
   </DataGenerators>
 </HERON>

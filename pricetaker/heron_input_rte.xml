@@ -1,18 +1,16 @@
 <HERON>
   <!-- We used 6 hour storage media cost per unit energy reference for TES -->
-  <Case name="MISO_TES_HiCost">
+  <Case name="PriceTaker">
     <label name="region">MISO</label>
+    <label name="WindCap">34</label>
+    <label name="SolarCap">4</label>
     <mode>sweep</mode>
-    <debug>
-          <inner_samples>1</inner_samples>
-          <macro_steps>1</macro_steps>
-          <dispatch_plot>True</dispatch_plot>
-    </debug>
-    <num_arma_samples>1</num_arma_samples>
-<!--    <parallel>-->
-<!--      <outer>2</outer>-->
-<!--      <inner>4</inner>-->
-<!--    </parallel>-->
+<!--    <debug>-->
+<!--          <inner_samples>1</inner_samples>-->
+<!--          <macro_steps>1</macro_steps>-->
+<!--          <dispatch_plot>True</dispatch_plot>-->
+<!--    </debug>-->
+    <num_arma_samples>10</num_arma_samples>
     <time_discretization>
       <year_variable>YEAR</year_variable>
       <time_variable>HOUR</time_variable>
@@ -27,9 +25,9 @@
       <verbosity>50</verbosity>
     </economics>
     <dispatcher>
-      <pyomo>
-        <rolling_window_length>365</rolling_window_length>
-      </pyomo>
+      <custom>
+        <location>dereg_timeseries_rte.py</location>
+      </custom>
     </dispatcher>
   </Case>
 
@@ -50,8 +48,8 @@
           </driver>
           <reference_price>
 <!--            <sweep_values debug_value="-1300">-1140, -1520</sweep_values>  &lt;!&ndash; 3000 - 4000 $/kWe @ 38% efficiency &ndash;&gt;-->
-<!--            <fixed_value>-1140</fixed_value>-->
-            <fixed_value>-1520</fixed_value>
+            <fixed_value>-1140</fixed_value>
+<!--            <fixed_value>-1520</fixed_value>-->
           </reference_price>
           <reference_driver>
             <fixed_value>1e-6</fixed_value>  <!-- kW to GW -->
@@ -64,8 +62,8 @@
           </driver>
           <reference_price>
 <!--            <sweep_values debug_value="-110">-104, -120</sweep_values>  &lt;!&ndash; 104-120 $/kWe-yr &ndash;&gt;-->
-<!--            <fixed_value>-104</fixed_value>-->
-            <fixed_value>-120</fixed_value>
+            <fixed_value>-104</fixed_value>
+<!--            <fixed_value>-120</fixed_value>-->
           </reference_price>
           <reference_driver>
             <fixed_value>1e-6</fixed_value>  <!-- kW to GW -->
@@ -77,8 +75,8 @@
           </driver>
           <reference_price>
 <!--            <sweep_values debug_value="-7">-6.6044, -8.2574</sweep_values>  &lt;!&ndash; 17.38 - 21.73 $/MWe-h @ 38% efficiency &ndash;&gt;-->
-<!--            <fixed_value>-6.6044</fixed_value>-->
-            <fixed_value>-8.2574</fixed_value>
+            <fixed_value>-6.6044</fixed_value>
+<!--            <fixed_value>-8.2574</fixed_value>-->
           </reference_price>
           <reference_driver>
             <fixed_value>1e-3</fixed_value>  <!-- MW to GW -->
@@ -113,8 +111,8 @@
           </driver>
           <reference_price>
 <!--            <sweep_values debug_value="-600">-500, -700</sweep_values>  &lt;!&ndash; $/kWe &ndash;&gt;  &lt;!&ndash; Hill et al. (2022) &ndash;&gt;-->
-<!--            <fixed_value>-500</fixed_value>-->
-            <fixed_value>-700</fixed_value>
+            <fixed_value>-500</fixed_value>
+<!--            <fixed_value>-700</fixed_value>-->
           </reference_price>
           <reference_driver>
             <fixed_value>1e-6</fixed_value>
@@ -127,8 +125,8 @@
           </driver>
           <reference_price>
 <!--            <sweep_values debug_value="-50">-40, -60</sweep_values>  &lt;!&ndash; $/kWe-yr &ndash;&gt;  &lt;!&ndash; Hill et al. (2022) &ndash;&gt;-->
-<!--            <fixed_value>-40</fixed_value>-->
-            <fixed_value>-60</fixed_value>
+            <fixed_value>-40</fixed_value>
+<!--            <fixed_value>-60</fixed_value>-->
           </reference_price>
           <reference_driver>
             <fixed_value>1e-6</fixed_value>
@@ -140,8 +138,8 @@
           </driver>
           <reference_price>
 <!--            <sweep_values debug_value="1.0">0.0,2.0</sweep_values>  &lt;!&ndash; $/MWe-h &ndash;&gt;  &lt;!&ndash; Hill et al. (2022) &ndash;&gt;-->
-<!--            <fixed_value>0</fixed_value>-->
-            <fixed_value>-2</fixed_value>
+            <fixed_value>0</fixed_value>
+<!--            <fixed_value>-2</fixed_value>-->
           </reference_price>
           <reference_driver>
             <fixed_value>1e-3</fixed_value>
@@ -150,54 +148,12 @@
       </economics>
     </Component>
 
-    <Component name="wind">
-      <produces resource="electricity" dispatch="fixed">
-        <capacity resource="electricity">
-          <ARMA variable="WIND">synth</ARMA>
-          <multiplier>31.098</multiplier>  <!-- MISO 2021 -->
-        </capacity>
-      </produces>
-      <economics>
-        <lifetime>1</lifetime>
-        <CashFlow name="wind_sales" type="repeating" taxable="True" inflation="none" mult_target="False">
-          <driver>
-            <activity>electricity</activity>
-          </driver>
-          <reference_price>
-            <ARMA variable="PRICE">synth</ARMA> <!-- Cost = revenue, so a net zero on the economics of our system of interest -->
-            <multiplier>-1</multiplier>
-          </reference_price>
-        </CashFlow>
-      </economics>
-    </Component>
-
-    <Component name="solar">
-      <produces resource="electricity" dispatch="fixed">
-        <capacity resource="electricity">
-          <ARMA variable="SOLAR">synth</ARMA>
-          <multiplier>3.839</multiplier>  <!-- MISO 2021 -->
-        </capacity>
-      </produces>
-      <economics>
-        <lifetime>1</lifetime>
-        <CashFlow name="solar_sales" type="repeating" taxable="True" inflation="none" mult_target="False">
-          <driver>
-            <activity>electricity</activity>
-          </driver>
-          <reference_price>
-            <ARMA variable="PRICE">synth</ARMA> <!-- Cost = revenue, so a net zero on the economics of our system of interest -->
-            <multiplier>-1</multiplier>
-          </reference_price>
-        </CashFlow>
-      </economics>
-    </Component>
-
     <!--DEMANDING COMPONENTS-->
     <Component name="grid">
-      <demands resource="electricity" dispatch="fixed">
+      <demands resource="electricity" dispatch="dependent">
         <capacity>
-          <ARMA variable="TOTALLOAD">synth</ARMA>
-          <multiplier>-1</multiplier>
+          <!-- This is as large as possible sink -->
+          <fixed_value>100e3</fixed_value>
         </capacity>
       </demands>
       <economics>
@@ -208,38 +164,7 @@
             <multiplier>-1</multiplier>
           </driver>
           <reference_price>
-            <ARMA variable="PRICE">synth</ARMA>
-          </reference_price>
-        </CashFlow>
-      </economics>
-    </Component>
-
-    <Component name="sink"> <!-- for VRE curtailment -->
-      <demands resource="electricity" dispatch="independent">
-        <capacity resource="electricity">
-          <fixed_value>-100e3</fixed_value>
-        </capacity>
-      </demands>
-      <economics>
-        <lifetime>1</lifetime>
-      </economics>
-    </Component>
-
-    <Component name="source"> <!-- Models other generators in market -->
-      <produces resource="electricity" dispatch="independent">
-        <capacity resource="electricity">
-          <fixed_value>100e3</fixed_value>
-        </capacity>
-      </produces>
-      <economics>
-        <lifetime>1</lifetime>
-        <CashFlow name="other_generators" type="repeating" taxable="True" inflation="none" mult_target="False">
-          <driver>
-            <activity>electricity</activity>
-          </driver>
-          <reference_price>
-            <ARMA variable="PRICE">synth</ARMA> <!-- Cost = revenue, so a net zero on the economics of our system of interest -->
-            <multiplier>-1</multiplier>
+            <ARMA variable="PRICE">Load</ARMA>
           </reference_price>
         </CashFlow>
       </economics>
@@ -250,12 +175,15 @@
       <stores resource="heat" dispatch="independent">
         <capacity resource="heat">
 <!--          <sweep_values debug_value="2.5">1.5, 4.0</sweep_values>-->
-          <sweep_values debug_value="2.5">0, 2.5, 4.0</sweep_values>
+          <sweep_values debug_value="2.5">0, 1.5, 2.5, 4.0</sweep_values>
         </capacity>
         <initial_stored>
           <fixed_value>0</fixed_value>
         </initial_stored>
-        <RTE>0.93</RTE>  <!-- TODO: I wish we could do <sweep_values> here! -->
+        <RTE>
+          <fixed_value>0.93</fixed_value>
+        </RTE>
+<!--        <RTE>0.93</RTE>-->
       </stores>
       <economics>
         <lifetime>30</lifetime>
@@ -265,8 +193,8 @@
           </driver>
           <reference_price>
 <!--            <sweep_values debug_value="-5.0">-1.7,-10.3</sweep_values> &lt;!&ndash; 5-30 $/kWh_e (Mikkelson, 2022) @ 90% RTE, 38% BOP efficiency &ndash;&gt;-->
-<!--            <fixed_value>-1.7</fixed_value>-->
-            <fixed_value>-10.3</fixed_value>
+            <fixed_value>-1.7</fixed_value>
+<!--            <fixed_value>-10.3</fixed_value>-->
           </reference_price>
           <reference_driver>
             <fixed_value>1e-6</fixed_value>
@@ -279,8 +207,8 @@
           </driver>
           <reference_price>
 <!--            <sweep_values debug_value="-30">-14, -43</sweep_values>  &lt;!&ndash; $/MWh_th (Hill, 2022) &ndash;&gt;-->
-<!--            <fixed_value>-14</fixed_value>-->
-            <fixed_value>-43</fixed_value>
+            <fixed_value>-14</fixed_value>
+<!--            <fixed_value>-43</fixed_value>-->
           </reference_price>
           <reference_driver>
             <fixed_value>1e-3</fixed_value>
@@ -292,8 +220,8 @@
           </driver>
           <reference_price>
 <!--            <sweep_values debug_value="-15">-3, -29</sweep_values>  &lt;!&ndash; $/MWh_th (Hill, 2022) &ndash;&gt;-->
-<!--            <fixed_value>-3</fixed_value>-->
-            <fixed_value>-29</fixed_value>
+            <fixed_value>-3</fixed_value>
+<!--            <fixed_value>-29</fixed_value>-->
           </reference_price>
           <reference_driver>
             <fixed_value>1e-3</fixed_value>
@@ -305,6 +233,6 @@
   </Components>
 
   <DataGenerators>
-    <ARMA name="synth" variable="TOTALLOAD,WIND,SOLAR,PRICE" evalMode="clustered">../ARMA/MISO/arma.pk</ARMA>
+    <ARMA name="Load" variable="TOTALLOAD,WIND,SOLAR,PRICE" evalMode="clustered">../ARMA/MISO/arma.pk</ARMA>
   </DataGenerators>
 </HERON>

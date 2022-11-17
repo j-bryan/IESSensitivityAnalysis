@@ -1,0 +1,129 @@
+<Economics verbosity="50">
+  <Global>
+    <DiscountRate>0.08</DiscountRate>
+    <tax>0.25</tax>
+    <inflation>0.025</inflation>
+    <Indicator name="NPV" target="0">NPP|capex
+      NPP|FOM
+      NPP|VOM
+      BOP|capex
+      BOP|FOM
+      BOP|VOM
+      wind|wind_sales
+      solar|solar_sales
+      grid|grid_sales
+      source|other_generators
+      TES|capex
+      TES|FOM
+      TES|VOM</Indicator>
+    <ProjectTime>1</ProjectTime>
+  </Global>
+
+  <Component name="NPP">
+    <Life_time>60</Life_time>
+    <CashFlows>
+      <Capex inflation="none" mult_target="False" name="capex" tax="True">
+        <driver>_NPP_driver</driver>
+        <alpha>-1520.0</alpha>
+        <reference>1e-06</reference>
+        <X>1</X>
+        <depreciation scheme="MACRS">15</depreciation>
+      </Capex>
+      <Recurring inflation="none" mult_target="False" name="FOM" tax="True">
+        <driver>_rec_year_Variable_NPP_FOM</driver>
+        <alpha>-1.0</alpha>
+      </Recurring>
+      <Recurring inflation="none" mult_target="False" name="VOM" tax="True">
+        <driver>_rec_hour_Activity_NPP_VOM</driver>
+        <alpha>-1.0</alpha>
+      </Recurring>
+    </CashFlows>
+  </Component>
+
+  <Component name="BOP">
+    <Life_time>20</Life_time>
+    <CashFlows>
+      <Capex inflation="none" mult_target="False" name="capex" tax="True">
+        <driver>_BOP_driver</driver>
+        <alpha>-700.0</alpha>
+        <reference>1e-06</reference>
+        <X>1</X>
+        <depreciation scheme="MACRS">15</depreciation>
+      </Capex>
+      <Recurring inflation="none" mult_target="False" name="FOM" tax="True">
+        <driver>_rec_year_Variable_BOP_FOM</driver>
+        <alpha>-1.0</alpha>
+      </Recurring>
+      <Recurring inflation="none" mult_target="False" name="VOM" tax="True">
+        <driver>_rec_hour_Activity_BOP_VOM</driver>
+        <alpha>-1.0</alpha>
+      </Recurring>
+    </CashFlows>
+  </Component>
+
+  <Component name="wind">
+    <Life_time>1</Life_time>
+    <CashFlows>
+      <Recurring inflation="none" mult_target="False" name="wind_sales" tax="True">
+        <driver>_rec_hour_Activity_wind_wind_sales</driver>
+        <alpha>-1.0</alpha>
+      </Recurring>
+    </CashFlows>
+  </Component>
+
+  <Component name="solar">
+    <Life_time>1</Life_time>
+    <CashFlows>
+      <Recurring inflation="none" mult_target="False" name="solar_sales" tax="True">
+        <driver>_rec_hour_Activity_solar_solar_sales</driver>
+        <alpha>-1.0</alpha>
+      </Recurring>
+    </CashFlows>
+  </Component>
+
+  <Component name="grid">
+    <Life_time>1</Life_time>
+    <CashFlows>
+      <Recurring inflation="none" mult_target="False" name="grid_sales" tax="True">
+        <driver>_rec_hour_Activity_grid_grid_sales</driver>
+        <alpha>-1.0</alpha>
+      </Recurring>
+    </CashFlows>
+  </Component>
+
+  <Component name="sink">
+    <Life_time>1</Life_time>
+    <CashFlows />
+  </Component>
+
+  <Component name="source">
+    <Life_time>1</Life_time>
+    <CashFlows>
+      <Recurring inflation="none" mult_target="False" name="other_generators" tax="True">
+        <driver>_rec_hour_Activity_source_other_generators</driver>
+        <alpha>-1.0</alpha>
+      </Recurring>
+    </CashFlows>
+  </Component>
+
+  <Component name="TES">
+    <Life_time>30</Life_time>
+    <CashFlows>
+      <Capex inflation="none" mult_target="False" name="capex" tax="True">
+        <driver>_TES_driver</driver>
+        <alpha>-10.3</alpha>
+        <reference>1e-06</reference>
+        <X>1</X>
+        <depreciation scheme="MACRS">15</depreciation>
+      </Capex>
+      <Recurring inflation="none" mult_target="False" name="FOM" tax="True">
+        <driver>_rec_year_Variable_TES_FOM</driver>
+        <alpha>-1.0</alpha>
+      </Recurring>
+      <Recurring inflation="none" mult_target="False" name="VOM" tax="True">
+        <driver>_rec_hour_Activity_TES_VOM</driver>
+        <alpha>-1.0</alpha>
+      </Recurring>
+    </CashFlows>
+  </Component>
+</Economics>

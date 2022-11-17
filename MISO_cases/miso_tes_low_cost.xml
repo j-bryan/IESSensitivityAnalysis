@@ -1,13 +1,13 @@
 <HERON>
   <!-- We used 6 hour storage media cost per unit energy reference for TES -->
-  <Case name="TES_LowCost">
+  <Case name="MISO_TES_LowCost">
     <label name="region">MISO</label>
     <mode>sweep</mode>
-<!--    <debug>-->
-<!--          <inner_samples>1</inner_samples>-->
-<!--          <macro_steps>1</macro_steps>-->
-<!--          <dispatch_plot>True</dispatch_plot>-->
-<!--    </debug>-->
+    <debug>
+          <inner_samples>1</inner_samples>
+          <macro_steps>1</macro_steps>
+          <dispatch_plot>True</dispatch_plot>
+    </debug>
     <num_arma_samples>1</num_arma_samples>
 <!--    <parallel>-->
 <!--      <outer>2</outer>-->
