@@ -1,0 +1,97 @@
+<Simulation verbosity="all">
+  <RunInfo>
+    <JobName>PriceTaker_o</JobName>
+    <WorkingDir>PriceTaker_o</WorkingDir>
+    <Sequence>sweep</Sequence>
+    <batchSize>1</batchSize>
+  </RunInfo>
+
+  <Steps>
+    <MultiRun name="sweep">
+      <Input class="Files" type="raven">inner_workflow</Input>
+      <Input class="Files" type="">heron_lib</Input>
+      <Model class="Models" type="Code">raven</Model>
+      <Sampler class="Samplers" type="Grid">grid</Sampler>
+      <Output class="DataObjects" type="PointSet">grid</Output>
+      <Output class="OutStreams" type="Print">sweep</Output>
+    </MultiRun>
+  </Steps>
+
+  <VariableGroups>
+    <Group name="GRO_capacities">NPP_capacity, BOP_capacity, BOP_minimum, grid_capacity, TES_capacity, TES_initial_stored, TES_sqrt_rte</Group>
+    <Group name="GRO_outer_results">mean_NPV, std_NPV, med_NPV, max_NPV, min_NPV, perc_5_NPV, perc_95_NPV, samp_NPV, var_NPV</Group>
+    <Group name="GRO_outer_debug_dispatch" />
+    <Group name="GRO_outer_debug_synthetics" />
+    <Group name="GRO_case_labels">region_label, WindCap_label, SolarCap_label</Group>
+  </VariableGroups>
+
+  <DataObjects>
+    <PointSet name="grid">
+      <Input>GRO_capacities, GRO_case_labels</Input>
+      <Output>GRO_outer_results</Output>
+    </PointSet>
+  </DataObjects>
+
+  <Models>
+    <Code name="raven" subType="RAVEN">
+      <executable>C:\Users\A01631741\projects\raven\raven_framework</executable>
+      <outputDatabase>disp_results</outputDatabase>
+      <conversion>
+        <input source="../write_inner.py" />
+      </conversion>
+      <alias type="input" variable="denoises">Samplers|MonteCarlo@name:mc_arma_dispatch|constant@name:denoises</alias>
+      <alias type="input" variable="NPP_capacity">Samplers|MonteCarlo@name:mc_arma_dispatch|constant@name:NPP_capacity</alias>
+      <alias type="input" variable="BOP_capacity">Samplers|MonteCarlo@name:mc_arma_dispatch|constant@name:BOP_capacity</alias>
+      <alias type="input" variable="BOP_minimum">Samplers|MonteCarlo@name:mc_arma_dispatch|constant@name:BOP_minimum</alias>
+      <alias type="input" variable="grid_capacity">Samplers|MonteCarlo@name:mc_arma_dispatch|constant@name:grid_capacity</alias>
+      <alias type="input" variable="TES_capacity">Samplers|MonteCarlo@name:mc_arma_dispatch|constant@name:TES_capacity</alias>
+      <alias type="input" variable="TES_initial_stored">Samplers|MonteCarlo@name:mc_arma_dispatch|constant@name:TES_initial_stored</alias>
+      <alias type="input" variable="TES_sqrt_rte">Samplers|MonteCarlo@name:mc_arma_dispatch|constant@name:TES_sqrt_rte</alias>
+      <alias type="input" variable="region_label">Samplers|MonteCarlo@name:mc_arma_dispatch|constant@name:region_label</alias>
+      <alias type="input" variable="WindCap_label">Samplers|MonteCarlo@name:mc_arma_dispatch|constant@name:WindCap_label</alias>
+      <alias type="input" variable="SolarCap_label">Samplers|MonteCarlo@name:mc_arma_dispatch|constant@name:SolarCap_label</alias>
+    </Code>
+  </Models>
+
+  <Distributions>
+    <Uniform name="TES_capacity_dist">
+      <lowerBound>0.0</lowerBound>
+      <upperBound>4.0</upperBound>
+    </Uniform>
+  </Distributions>
+
+  <Samplers>
+    <Grid name="grid">
+      <constant name="denoises">10</constant>
+      <constant name="region_label">MISO</constant>
+      <constant name="WindCap_label">34</constant>
+      <constant name="SolarCap_label">4</constant>
+      <constant name="NPP_capacity">0.834</constant>
+      <constant name="BOP_capacity">0.5</constant>
+      <constant name="BOP_minimum">0.2</constant>
+      <constant name="grid_capacity">100000.0</constant>
+      <variable name="TES_capacity">
+        <distribution>TES_capacity_dist</distribution>
+        <grid construction="custom" type="value">0.0 1.5 2.5 4.0</grid>
+      </variable>
+      <constant name="TES_initial_stored">0.0</constant>
+      <constant name="TES_sqrt_rte">0.9643650760992956</constant>
+    </Grid>
+  </Samplers>
+
+  <Files>
+    <Input name="inner_workflow" type="raven">../inner.xml</Input>
+    <Input name="heron_lib">../heron.lib</Input>
+  </Files>
+
+  <OutStreams>
+    <Print name="sweep">
+      <type>csv</type>
+      <source>grid</source>
+    </Print>
+    <Plot name="opt_path" subType="OptPath">
+      <source>opt_soln</source>
+      <vars>GRO_capacities, mean_NPV</vars>
+    </Plot>
+  </OutStreams>
+</Simulation>

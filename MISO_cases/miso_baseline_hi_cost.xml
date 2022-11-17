@@ -1,6 +1,6 @@
 <HERON>
   <!-- We used 6 hour storage media cost per unit energy reference for TES -->
-  <Case name="Baseline_HiCost">
+  <Case name="MISO_Baseline_HiCost">
     <label name="region">MISO</label>
     <mode>sweep</mode>
     <debug>
@@ -10,7 +10,7 @@
     </debug>
     <num_arma_samples>1</num_arma_samples>
 <!--    <parallel>-->
-<!--      <outer>4</outer>-->
+<!--      <outer>2</outer>-->
 <!--      <inner>4</inner>-->
 <!--    </parallel>-->
     <time_discretization>
@@ -38,7 +38,8 @@
     <Component name="NPP">
       <produces resource="heat" dispatch="fixed">
         <capacity resource="heat">
-          <sweep_values debug_value="0.834">0.6, 0.7, 0.8, 0.9, 1.0</sweep_values>
+<!--          <sweep_values debug_value="0.834">0.6, 0.7, 0.8, 0.9, 1.0</sweep_values>-->
+          <fixed_value>0.834</fixed_value>
         </capacity>
       </produces>
       <economics>
@@ -49,8 +50,8 @@
           </driver>
           <reference_price>
 <!--            <sweep_values debug_value="-1300">-1140, -1520</sweep_values>  &lt;!&ndash; 3000 - 4000 $/kWe @ 38% efficiency &ndash;&gt;-->
-            <fixed_value>-1140</fixed_value>
-<!--            <fixed_value>-1520</fixed_value>-->
+<!--            <fixed_value>-1140</fixed_value>-->
+            <fixed_value>-1520</fixed_value>
           </reference_price>
           <reference_driver>
             <fixed_value>1e-6</fixed_value>  <!-- kW to GW -->
@@ -105,8 +106,8 @@
         </transfer>
       </produces>
       <economics>
-        <lifetime>1</lifetime>
-        <CashFlow name="capex" type="one-time"  taxable="True" inflation="none" mult_target="False">
+        <lifetime>20</lifetime>
+        <CashFlow name="capex" type="one-time" taxable="True" inflation="none" mult_target="False">
           <driver>
             <variable>BOP_capacity</variable>
           </driver>
@@ -118,6 +119,7 @@
           <reference_driver>
             <fixed_value>1e-6</fixed_value>
           </reference_driver>
+          <depreciate>15</depreciate>
         </CashFlow>
         <CashFlow name="FOM" type="repeating" period="year" taxable="True" inflation="none" mult_target="False">
           <driver>
@@ -125,8 +127,8 @@
           </driver>
           <reference_price>
 <!--            <sweep_values debug_value="-50">-40, -60</sweep_values>  &lt;!&ndash; $/kWe-yr &ndash;&gt;  &lt;!&ndash; Hill et al. (2022) &ndash;&gt;-->
-            <fixed_value>-40</fixed_value>
-<!--            <fixed_value>-60</fixed_value>-->
+<!--            <fixed_value>-40</fixed_value>-->
+            <fixed_value>-60</fixed_value>
           </reference_price>
           <reference_driver>
             <fixed_value>1e-6</fixed_value>

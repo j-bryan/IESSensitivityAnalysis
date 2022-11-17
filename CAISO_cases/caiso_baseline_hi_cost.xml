@@ -1,0 +1,253 @@
+<HERON>
+  <!-- We used 6 hour storage media cost per unit energy reference for TES -->
+  <Case name="CAISO_Baseline_HiCost">
+    <label name="region">CAISO</label>
+    <mode>sweep</mode>
+    <debug>
+          <inner_samples>1</inner_samples>
+          <macro_steps>1</macro_steps>
+          <dispatch_plot>True</dispatch_plot>
+    </debug>
+    <num_arma_samples>1</num_arma_samples>
+<!--    <parallel>-->
+<!--      <outer>2</outer>-->
+<!--      <inner>4</inner>-->
+<!--    </parallel>-->
+    <time_discretization>
+      <year_variable>YEAR</year_variable>
+      <time_variable>HOUR</time_variable>
+      <end_time>145</end_time>
+      <num_steps>146</num_steps>
+    </time_discretization>
+    <economics>
+      <ProjectTime>1</ProjectTime>
+      <DiscountRate>0.08</DiscountRate>
+      <tax>0.25</tax>
+      <inflation>0.025</inflation>
+      <verbosity>50</verbosity>
+    </economics>
+    <dispatcher>
+      <pyomo>
+        <rolling_window_length>146</rolling_window_length>
+      </pyomo>
+    </dispatcher>
+  </Case>
+
+  <Components>
+    <!--PRODUCING COMPONENTS-->
+    <Component name="NPP">
+      <produces resource="heat" dispatch="fixed">
+        <capacity resource="heat">
+<!--          <sweep_values debug_value="0.834">0.6, 0.7, 0.8, 0.9, 1.0</sweep_values>-->
+          <fixed_value>0.834</fixed_value>
+        </capacity>
+      </produces>
+      <economics>
+        <lifetime>60</lifetime>
+        <CashFlow name="capex" type="one-time" taxable="True" inflation="none" mult_target="False">  <!-- OCC from NPP construction, C2N#3 (Hansen 2022, Coal to Nuclear report) -->
+          <driver>
+            <variable>NPP_capacity</variable>
+          </driver>
+          <reference_price>
+<!--            <sweep_values debug_value="-1300">-1140, -1520</sweep_values>  &lt;!&ndash; 3000 - 4000 $/kWe @ 38% efficiency &ndash;&gt;-->
+<!--            <fixed_value>-1140</fixed_value>-->
+            <fixed_value>-1520</fixed_value>
+          </reference_price>
+          <reference_driver>
+            <fixed_value>1e-6</fixed_value>  <!-- kW to GW -->
+          </reference_driver>
+          <depreciate>15</depreciate>
+        </CashFlow>
+        <CashFlow name="FOM" type="repeating" period="year" taxable="True" inflation="none" mult_target="False">  <!-- FOM from C2N#3 (Hansen 2022, Coal to Nuclear report) -->
+          <driver>
+            <variable>NPP_capacity</variable>
+          </driver>
+          <reference_price>
+<!--            <sweep_values debug_value="-110">-104, -120</sweep_values>  &lt;!&ndash; 104-120 $/kWe-yr &ndash;&gt;-->
+<!--            <fixed_value>-104</fixed_value>-->
+            <fixed_value>-120</fixed_value>
+          </reference_price>
+          <reference_driver>
+            <fixed_value>1e-6</fixed_value>  <!-- kW to GW -->
+          </reference_driver>
+        </CashFlow>
+        <CashFlow name="VOM" type="repeating" taxable="True" inflation="none" mult_target="False">  <!-- VOM + Fuel Cost from C2N#3 (Hansen 2022, Coal to Nuclear report) -->
+          <driver>
+            <activity>heat</activity>
+          </driver>
+          <reference_price>
+<!--            <sweep_values debug_value="-7">-6.6044, -8.2574</sweep_values>  &lt;!&ndash; 17.38 - 21.73 $/MWe-h @ 38% efficiency &ndash;&gt;-->
+<!--            <fixed_value>-6.6044</fixed_value>-->
+            <fixed_value>-8.2574</fixed_value>
+          </reference_price>
+          <reference_driver>
+            <fixed_value>1e-3</fixed_value>  <!-- MW to GW -->
+          </reference_driver>
+        </CashFlow>
+      </economics>
+    </Component>
+
+    <Component name="BOP">
+      <!-- Indpendent & Dependent dispatch are currently the same thing -->
+      <!-- This needs to be fixed to be flexible -->
+      <produces resource="electricity" dispatch="independent">
+        <consumes>heat</consumes>
+        <capacity resource="electricity">
+          <fixed_value>0.5</fixed_value>
+        </capacity>
+        <minimum resource="electricity">
+          <fixed_value>0.2</fixed_value>
+        </minimum>
+        <transfer>
+          <linear>
+            <rate resource="heat">-1</rate>
+            <rate resource="electricity">0.4</rate>
+          </linear>
+        </transfer>
+      </produces>
+      <economics>
+        <lifetime>20</lifetime>
+        <CashFlow name="capex" type="one-time" taxable="True" inflation="none" mult_target="False">
+          <driver>
+            <variable>BOP_capacity</variable>
+          </driver>
+          <reference_price>
+<!--            <sweep_values debug_value="-600">-500, -700</sweep_values>  &lt;!&ndash; $/kWe &ndash;&gt;  &lt;!&ndash; Hill et al. (2022) &ndash;&gt;-->
+<!--            <fixed_value>-500</fixed_value>-->
+            <fixed_value>-700</fixed_value>
+          </reference_price>
+          <reference_driver>
+            <fixed_value>1e-6</fixed_value>
+          </reference_driver>
+          <depreciate>15</depreciate>
+        </CashFlow>
+        <CashFlow name="FOM" type="repeating" period="year" taxable="True" inflation="none" mult_target="False">
+          <driver>
+            <variable>BOP_capacity</variable>
+          </driver>
+          <reference_price>
+<!--            <sweep_values debug_value="-50">-40, -60</sweep_values>  &lt;!&ndash; $/kWe-yr &ndash;&gt;  &lt;!&ndash; Hill et al. (2022) &ndash;&gt;-->
+<!--            <fixed_value>-40</fixed_value>-->
+            <fixed_value>-60</fixed_value>
+          </reference_price>
+          <reference_driver>
+            <fixed_value>1e-6</fixed_value>
+          </reference_driver>
+        </CashFlow>
+        <CashFlow name="VOM" type="repeating"  taxable="True" inflation="none" mult_target="False">
+          <driver>
+            <activity>electricity</activity>
+          </driver>
+          <reference_price>
+<!--            <sweep_values debug_value="1.0">0.0,2.0</sweep_values>  &lt;!&ndash; $/MWe-h &ndash;&gt;  &lt;!&ndash; Hill et al. (2022) &ndash;&gt;-->
+<!--            <fixed_value>0</fixed_value>-->
+            <fixed_value>-2</fixed_value>
+          </reference_price>
+          <reference_driver>
+            <fixed_value>1e-3</fixed_value>
+          </reference_driver>
+        </CashFlow>
+      </economics>
+    </Component>
+
+    <Component name="wind">
+      <produces resource="electricity" dispatch="fixed">
+        <capacity resource="electricity">
+          <ARMA variable="WIND">synth</ARMA>
+          <multiplier>31.098</multiplier>  <!-- MISO 2021 -->
+        </capacity>
+      </produces>
+      <economics>
+        <lifetime>1</lifetime>
+        <CashFlow name="wind_sales" type="repeating" taxable="True" inflation="none" mult_target="False">
+          <driver>
+            <activity>electricity</activity>
+          </driver>
+          <reference_price>
+            <ARMA variable="PRICE">synth</ARMA> <!-- Cost = revenue, so a net zero on the economics of our system of interest -->
+            <multiplier>-1</multiplier>
+          </reference_price>
+        </CashFlow>
+      </economics>
+    </Component>
+
+    <Component name="solar">
+      <produces resource="electricity" dispatch="fixed">
+        <capacity resource="electricity">
+          <ARMA variable="SOLAR">synth</ARMA>
+          <multiplier>3.839</multiplier>  <!-- MISO 2021 -->
+        </capacity>
+      </produces>
+      <economics>
+        <lifetime>1</lifetime>
+        <CashFlow name="solar_sales" type="repeating" taxable="True" inflation="none" mult_target="False">
+          <driver>
+            <activity>electricity</activity>
+          </driver>
+          <reference_price>
+            <ARMA variable="PRICE">synth</ARMA> <!-- Cost = revenue, so a net zero on the economics of our system of interest -->
+            <multiplier>-1</multiplier>
+          </reference_price>
+        </CashFlow>
+      </economics>
+    </Component>
+
+    <!--DEMANDING COMPONENTS-->
+    <Component name="grid">
+      <demands resource="electricity" dispatch="fixed">
+        <capacity>
+          <ARMA variable="TOTALLOAD">synth</ARMA>
+          <multiplier>-1</multiplier>
+        </capacity>
+      </demands>
+      <economics>
+        <lifetime>1</lifetime>
+        <CashFlow name="grid_sales" type="repeating" taxable="True" inflation="none" mult_target="False">
+          <driver>
+            <activity>electricity</activity>
+            <multiplier>-1</multiplier>
+          </driver>
+          <reference_price>
+            <ARMA variable="PRICE">synth</ARMA>
+          </reference_price>
+        </CashFlow>
+      </economics>
+    </Component>
+
+    <Component name="sink"> <!-- for VRE curtailment -->
+      <demands resource="electricity" dispatch="independent">
+        <capacity resource="electricity">
+          <fixed_value>-100e3</fixed_value>
+        </capacity>
+      </demands>
+      <economics>
+        <lifetime>1</lifetime>
+      </economics>
+    </Component>
+
+    <Component name="source"> <!-- Models other generators in market -->
+      <produces resource="electricity" dispatch="independent">
+        <capacity resource="electricity">
+          <fixed_value>100e3</fixed_value>
+        </capacity>
+      </produces>
+      <economics>
+        <lifetime>1</lifetime>
+        <CashFlow name="other_generators" type="repeating" taxable="True" inflation="none" mult_target="False">
+          <driver>
+            <activity>electricity</activity>
+          </driver>
+          <reference_price>
+            <ARMA variable="PRICE">synth</ARMA> <!-- Cost = revenue, so a net zero on the economics of our system of interest -->
+            <multiplier>-1</multiplier>
+          </reference_price>
+        </CashFlow>
+      </economics>
+    </Component>
+
+  </Components>
+
+  <DataGenerators>
+    <ARMA name="synth" variable="TOTALLOAD,WIND,SOLAR,PRICE" evalMode="clustered">../ARMA/CAISO/arma.pk</ARMA>
+  </DataGenerators>
+</HERON>
