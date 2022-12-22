@@ -1,15 +1,16 @@
 <HERON>
   <!-- We used 6 hour storage media cost per unit energy reference for TES -->
-  <Case name="PriceTaker">
+  <Case name="LowCosts_Simple">
     <label name="region">MISO</label>
-    <label name="WindCap">34</label>
-    <label name="SolarCap">4</label>
     <mode>sweep</mode>
-<!--    <debug>-->
-<!--          <inner_samples>1</inner_samples>-->
-<!--          <macro_steps>1</macro_steps>-->
-<!--          <dispatch_plot>True</dispatch_plot>-->
-<!--    </debug>-->
+   <debug>
+         <inner_samples>1</inner_samples>
+         <macro_steps>1</macro_steps>
+         <dispatch_plot>True</dispatch_plot>
+   </debug>
+    <data_handling>
+      <save_all_inner_metrics>True</save_all_inner_metrics>
+    </data_handling>
     <num_arma_samples>10</num_arma_samples>
     <time_discretization>
       <year_variable>YEAR</year_variable>
@@ -25,9 +26,9 @@
       <verbosity>50</verbosity>
     </economics>
     <dispatcher>
-      <custom>
-        <location>dereg_timeseries.py</location>
-      </custom>
+      <pyomo>
+          <rolling_window_length>48</rolling_window_length>
+      </pyomo>
     </dispatcher>
   </Case>
 
@@ -75,8 +76,8 @@
           </driver>
           <reference_price>
 <!--            <sweep_values debug_value="-7">-6.6044, -8.2574</sweep_values>  &lt;!&ndash; 17.38 - 21.73 $/MWe-h @ 38% efficiency &ndash;&gt;-->
-            <fixed_value>-6.6044</fixed_value>
-<!--            <fixed_value>-8.2574</fixed_value>-->
+<!--            <fixed_value>-6.6044</fixed_value>-->
+            <fixed_value>-8.2574</fixed_value>
           </reference_price>
           <reference_driver>
             <fixed_value>1e-3</fixed_value>  <!-- MW to GW -->
@@ -86,8 +87,6 @@
     </Component>
 
     <Component name="BOP">
-      <!-- Indpendent & Dependent dispatch are currently the same thing -->
-      <!-- This needs to be fixed to be flexible -->
       <produces resource="electricity" dispatch="independent">
         <consumes>heat</consumes>
         <capacity resource="electricity">
@@ -150,10 +149,10 @@
 
     <!--DEMANDING COMPONENTS-->
     <Component name="grid">
-      <demands resource="electricity" dispatch="dependent">
+      <demands resource="electricity" dispatch="independent">
         <capacity>
           <!-- This is as large as possible sink -->
-          <fixed_value>100e3</fixed_value>
+          <fixed_value>-100e3</fixed_value>
         </capacity>
       </demands>
       <economics>
@@ -220,8 +219,8 @@
           </driver>
           <reference_price>
 <!--            <sweep_values debug_value="-15">-3, -29</sweep_values>  &lt;!&ndash; $/MWh_th (Hill, 2022) &ndash;&gt;-->
-            <fixed_value>-3</fixed_value>
-<!--            <fixed_value>-29</fixed_value>-->
+<!--            <fixed_value>-3</fixed_value>-->
+            <fixed_value>-29</fixed_value>
           </reference_price>
           <reference_driver>
             <fixed_value>1e-3</fixed_value>
