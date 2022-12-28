@@ -54,7 +54,7 @@ def main():
         'NPP_FOM_alpha': [-41.6e6, -48.0e6],
         'NPP_VOM_alpha': [-6.6044e3, -8.2574e3],
         'BOP_capacity': [0.4, 0.7],
-        'BOP_minimum': [0, 0.3],
+        'BOP_minimum': [0, 0.2],
         'BOP_capex_alpha': [-500e6, -700e6],
         'BOP_FOM_alpha': [-40e6, -60e6],
         'BOP_VOM_alpha': [0e3, -2e3],
