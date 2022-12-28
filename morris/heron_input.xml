@@ -79,6 +79,17 @@
       </economics>
     </Component>
 
+    <Component name="NPP_unused"> <!-- helps keep simulations from breaking when NPP is sized too large for the BOP -->
+      <demands resource="heat" dispatch="independent">
+        <capacity resource="heat">
+          <fixed_value>-100e3</fixed_value>
+        </capacity>
+      </demands>
+      <economics>
+        <lifetime>1</lifetime>
+      </economics>
+    </Component>
+
     <Component name="BOP">
       <produces resource="electricity" dispatch="independent">
         <consumes>heat</consumes>
