@@ -1,7 +1,6 @@
 <HERON>
   <!-- We used 6 hour storage media cost per unit energy reference for TES -->
   <Case name="MidCostTES">
-    <label name="region">MISO</label>
     <mode>sweep</mode>
     <!--<debug>
          <inner_samples>1</inner_samples>
@@ -12,10 +11,10 @@
       <save_all_inner_metrics>True</save_all_inner_metrics>
     </data_handling>
     <num_arma_samples>4</num_arma_samples>
-    <parallel>
+    <!--<parallel>
       <outer>2</outer>
       <inner>2</inner>
-    </parallel>
+    </parallel>-->
     <result_statistics>
       <percentile/>
       <skewness/>
@@ -47,7 +46,6 @@
     <Component name="NPP">
       <produces resource="heat" dispatch="fixed">
         <capacity resource="heat">
-<!--          <sweep_values debug_value="0.834">0.6, 0.7, 0.8, 0.9, 1.0</sweep_values>-->
           <fixed_value>0.834</fixed_value>
         </capacity>
       </produces>
@@ -57,10 +55,8 @@
           <driver>
             <variable>NPP_capacity</variable>
           </driver>
-          <reference_price>
-            <!-- <sweep_values debug_value="-1300">-1140, -1520</sweep_values> 3000 - 4000 $/kWe @ 38% efficiency -->
-            <fixed_value>-1140e6</fixed_value>
-<!--            <fixed_value>-1520e6</fixed_value>-->
+          <reference_price> <!-- [-1140e6, -1520e6] at 40% BOP eff -->
+            <fixed_value>-1330e6</fixed_value>
           </reference_price>
           <depreciate>15</depreciate>
         </CashFlow>
@@ -68,20 +64,16 @@
           <driver>
             <variable>NPP_capacity</variable>
           </driver>
-          <reference_price>
-<!--            <sweep_values debug_value="-110">-104, -120</sweep_values>  &lt;!&ndash; 104-120 $/kWe-yr &ndash;&gt;-->
-            <fixed_value>-104e6</fixed_value>
-<!--            <fixed_value>-120e6</fixed_value>-->
+          <reference_price> <!-- [-41.6e6, -48.0e6] at 40% BOP eff -->
+            <fixed_value>-44.8e6</fixed_value>
           </reference_price>
         </CashFlow>
         <CashFlow name="VOM" type="repeating" taxable="True" inflation="none" mult_target="False">  <!-- VOM + Fuel Cost from C2N#3 (Hansen 2022, Coal to Nuclear report) -->
           <driver>
             <activity>heat</activity>
           </driver>
-          <reference_price>
-<!--            <sweep_values debug_value="-7">-6.6044, -8.2574</sweep_values>  &lt;!&ndash; 17.38 - 21.73 $/MWe-h @ 38% efficiency &ndash;&gt;-->
-<!--            <fixed_value>-6.6044e3</fixed_value>-->
-            <fixed_value>-8.2574e3</fixed_value>
+          <reference_price> <!-- [-6.6044e3, -8.2574e3] with 40% BOP eff -->
+            <fixed_value>-7.43e3</fixed_value>
           </reference_price>
         </CashFlow>
       </economics>
@@ -109,10 +101,8 @@
           <driver>
             <variable>BOP_capacity</variable>
           </driver>
-          <reference_price>
-<!--            <sweep_values debug_value="-600">-500, -700</sweep_values>  &lt;!&ndash; $/kWe &ndash;&gt;  &lt;!&ndash; Hill et al. (2022) &ndash;&gt;-->
-            <fixed_value>-500e6</fixed_value>
-<!--            <fixed_value>-700e6</fixed_value>-->
+          <reference_price> <!-- [-500e6, -700e6] (Hill, 2022) -->
+            <fixed_value>-600e6</fixed_value>
           </reference_price>
           <depreciate>15</depreciate>
         </CashFlow>
@@ -120,20 +110,16 @@
           <driver>
             <variable>BOP_capacity</variable>
           </driver>
-          <reference_price>
-<!--            <sweep_values debug_value="-50">-40, -60</sweep_values>  &lt;!&ndash; $/kWe-yr &ndash;&gt;  &lt;!&ndash; Hill et al. (2022) &ndash;&gt;-->
-            <fixed_value>-40e6</fixed_value>
-<!--            <fixed_value>-60e6</fixed_value>-->
+          <reference_price> <!-- [-40e6, -60e6] (Hill, 2022) -->
+            <fixed_value>-50e6</fixed_value>
           </reference_price>
         </CashFlow>
         <CashFlow name="VOM" type="repeating"  taxable="True" inflation="none" mult_target="False">
           <driver>
             <activity>electricity</activity>
           </driver>
-          <reference_price>
-<!--            <sweep_values debug_value="1.0">0.0,2.0</sweep_values>  &lt;!&ndash; $/MWe-h &ndash;&gt;  &lt;!&ndash; Hill et al. (2022) &ndash;&gt;-->
-            <fixed_value>0</fixed_value>
-<!--            <fixed_value>-2e3</fixed_value>-->
+          <reference_price> <!-- [0, -2e3] (Hill, 2022) -->
+            <fixed_value>-1e3</fixed_value>
           </reference_price>
         </CashFlow>
       </economics>
@@ -164,10 +150,8 @@
     <!--STORAGE COMPONENTS-->
     <Component name="TES">
       <stores resource="heat" dispatch="independent">
-        <capacity resource="heat">
-<!--          <sweep_values debug_value="2.5">1.5, 4.0</sweep_values>-->
-<!--          <sweep_values debug_value="2.5">0, 1.5, 2.5, 4.0</sweep_values>-->
-          <fixed_value>2.5</fixed_value>
+        <capacity resource="heat"> <!-- (500 - 345) * (boost time = 5.5 hr) / (BOP eff = 0.4) / (TES SQRT RTE = sqrt(0.93)) -->
+          <fixed_value>2.210</fixed_value>
         </capacity>
         <initial_stored>
           <fixed_value>0</fixed_value>
@@ -175,7 +159,6 @@
         <RTE>
           <fixed_value>0.93</fixed_value>
         </RTE>
-        <!--<RTE>0.93</RTE>-->
       </stores>
       <economics>
         <lifetime>30</lifetime>
@@ -183,10 +166,8 @@
           <driver>
             <variable>TES_capacity</variable>
           </driver>
-          <reference_price>
-           <!-- <sweep_values debug_value="-5.0">-1.7,-10.3</sweep_values> &lt;!&ndash; 5-30 $/kWh_e (Mikkelson, 2022) @ 90% RTE, 38% BOP efficiency &ndash;&gt; -->
-            <fixed_value>-1.7e6</fixed_value>
-<!--            <fixed_value>-10.3e6</fixed_value>-->
+          <reference_price> <!-- [-1.929e6, -11.572e6] @ 93% RTE, 40% BOP eff, (Mikkelson, 2022) -->
+            <fixed_value>-6.75e6</fixed_value>
           </reference_price>
           <depreciate>15</depreciate>
         </CashFlow>
@@ -194,20 +175,15 @@
           <driver>
             <variable>TES_capacity</variable>
           </driver>
-          <reference_price>
-<!--            <sweep_values debug_value="-30">-14, -43</sweep_values>  &lt;!&ndash; $/MWh_th (Hill, 2022) &ndash;&gt;-->
-            <fixed_value>-14e3</fixed_value>
-<!--            <fixed_value>-43e3</fixed_value>-->
+          <reference_price> <!-- [-14e3, -43e3] (Hill, 2022) -->
+            <fixed_value>-28.5e3</fixed_value>
           </reference_price>
         </CashFlow>
         <CashFlow name="VOM" type="repeating" taxable="True" inflation="none" mult_target="False">
           <driver>
             <activity tracking="discharge">heat</activity>
           </driver>
-          <reference_price>
-<!--            <sweep_values debug_value="-15">-3, -29</sweep_values>  &lt;!&ndash; $/MWh_th (Hill, 2022) &ndash;&gt;-->
-<!--            <fixed_value>-3e3</fixed_value>-->
-<!--            <fixed_value>-29e3</fixed_value>-->
+          <reference_price> <!-- [-3e3, -29e3] (Hill, 2022) -->
             <fixed_value>-16e3</fixed_value>
           </reference_price>
         </CashFlow>
