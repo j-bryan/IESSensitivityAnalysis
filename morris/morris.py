@@ -64,13 +64,13 @@ def main():
         'TES_VOM_alpha': [-3e3, -29e3],
         'TES_sqrt_rte': [0.4 ** 0.5, 0.93 ** 0.5]
     }
-    N = 200
-    opt_traj = 8
-    morris_points = generate_morris_points(bounds, N, optimal_trajectories=opt_traj)
-    df = pd.DataFrame(morris_points, columns=list(bounds.keys()))
-    df['PointProbability'] = np.ones(len(df))
-    df['ProbabilityWeight'] = np.ones(len(df))
-    df.to_csv(f'samples{len(df)}.csv')
+    for opt_traj in [4, 8, 16, 32]:
+        N = 200
+        morris_points = generate_morris_points(bounds, N, optimal_trajectories=opt_traj)
+        df = pd.DataFrame(morris_points, columns=list(bounds.keys()))
+        df['PointProbability'] = np.ones(len(df))
+        df['ProbabilityWeight'] = np.ones(len(df))
+        df.to_csv(f'samples{len(df)}.csv', index=False)
 
 
 if __name__ == '__main__':
