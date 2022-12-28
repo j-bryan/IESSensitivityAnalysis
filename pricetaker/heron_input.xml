@@ -1,17 +1,27 @@
 <HERON>
   <!-- We used 6 hour storage media cost per unit energy reference for TES -->
-  <Case name="LowCosts_Simple">
+  <Case name="MidCostTES">
     <label name="region">MISO</label>
     <mode>sweep</mode>
-   <debug>
+    <!--<debug>
          <inner_samples>1</inner_samples>
          <macro_steps>1</macro_steps>
          <dispatch_plot>True</dispatch_plot>
-   </debug>
+    </debug>-->
     <data_handling>
       <save_all_inner_metrics>True</save_all_inner_metrics>
     </data_handling>
-    <num_arma_samples>10</num_arma_samples>
+    <num_arma_samples>4</num_arma_samples>
+    <parallel>
+      <outer>2</outer>
+      <inner>2</inner>
+    </parallel>
+    <result_statistics>
+      <percentile/>
+      <skewness/>
+      <kurtosis/>
+      <valueAtRisk/>
+    </result_statistics>
     <time_discretization>
       <year_variable>YEAR</year_variable>
       <time_variable>HOUR</time_variable>
@@ -27,7 +37,7 @@
     </economics>
     <dispatcher>
       <pyomo>
-          <rolling_window_length>48</rolling_window_length>
+        <rolling_window_length>48</rolling_window_length>
       </pyomo>
     </dispatcher>
   </Case>
@@ -48,13 +58,10 @@
             <variable>NPP_capacity</variable>
           </driver>
           <reference_price>
-<!--            <sweep_values debug_value="-1300">-1140, -1520</sweep_values>  &lt;!&ndash; 3000 - 4000 $/kWe @ 38% efficiency &ndash;&gt;-->
-            <fixed_value>-1140</fixed_value>
-<!--            <fixed_value>-1520</fixed_value>-->
+            <!-- <sweep_values debug_value="-1300">-1140, -1520</sweep_values> 3000 - 4000 $/kWe @ 38% efficiency -->
+            <fixed_value>-1140e6</fixed_value>
+<!--            <fixed_value>-1520e6</fixed_value>-->
           </reference_price>
-          <reference_driver>
-            <fixed_value>1e-6</fixed_value>  <!-- kW to GW -->
-          </reference_driver>
           <depreciate>15</depreciate>
         </CashFlow>
         <CashFlow name="FOM" type="repeating" period="year" taxable="True" inflation="none" mult_target="False">  <!-- FOM from C2N#3 (Hansen 2022, Coal to Nuclear report) -->
@@ -63,12 +70,9 @@
           </driver>
           <reference_price>
 <!--            <sweep_values debug_value="-110">-104, -120</sweep_values>  &lt;!&ndash; 104-120 $/kWe-yr &ndash;&gt;-->
-            <fixed_value>-104</fixed_value>
-<!--            <fixed_value>-120</fixed_value>-->
+            <fixed_value>-104e6</fixed_value>
+<!--            <fixed_value>-120e6</fixed_value>-->
           </reference_price>
-          <reference_driver>
-            <fixed_value>1e-6</fixed_value>  <!-- kW to GW -->
-          </reference_driver>
         </CashFlow>
         <CashFlow name="VOM" type="repeating" taxable="True" inflation="none" mult_target="False">  <!-- VOM + Fuel Cost from C2N#3 (Hansen 2022, Coal to Nuclear report) -->
           <driver>
@@ -76,12 +80,9 @@
           </driver>
           <reference_price>
 <!--            <sweep_values debug_value="-7">-6.6044, -8.2574</sweep_values>  &lt;!&ndash; 17.38 - 21.73 $/MWe-h @ 38% efficiency &ndash;&gt;-->
-<!--            <fixed_value>-6.6044</fixed_value>-->
-            <fixed_value>-8.2574</fixed_value>
+<!--            <fixed_value>-6.6044e3</fixed_value>-->
+            <fixed_value>-8.2574e3</fixed_value>
           </reference_price>
-          <reference_driver>
-            <fixed_value>1e-3</fixed_value>  <!-- MW to GW -->
-          </reference_driver>
         </CashFlow>
       </economics>
     </Component>
@@ -110,12 +111,9 @@
           </driver>
           <reference_price>
 <!--            <sweep_values debug_value="-600">-500, -700</sweep_values>  &lt;!&ndash; $/kWe &ndash;&gt;  &lt;!&ndash; Hill et al. (2022) &ndash;&gt;-->
-            <fixed_value>-500</fixed_value>
-<!--            <fixed_value>-700</fixed_value>-->
+            <fixed_value>-500e6</fixed_value>
+<!--            <fixed_value>-700e6</fixed_value>-->
           </reference_price>
-          <reference_driver>
-            <fixed_value>1e-6</fixed_value>
-          </reference_driver>
           <depreciate>15</depreciate>
         </CashFlow>
         <CashFlow name="FOM" type="repeating" period="year" taxable="True" inflation="none" mult_target="False">
@@ -124,12 +122,9 @@
           </driver>
           <reference_price>
 <!--            <sweep_values debug_value="-50">-40, -60</sweep_values>  &lt;!&ndash; $/kWe-yr &ndash;&gt;  &lt;!&ndash; Hill et al. (2022) &ndash;&gt;-->
-            <fixed_value>-40</fixed_value>
-<!--            <fixed_value>-60</fixed_value>-->
+            <fixed_value>-40e6</fixed_value>
+<!--            <fixed_value>-60e6</fixed_value>-->
           </reference_price>
-          <reference_driver>
-            <fixed_value>1e-6</fixed_value>
-          </reference_driver>
         </CashFlow>
         <CashFlow name="VOM" type="repeating"  taxable="True" inflation="none" mult_target="False">
           <driver>
@@ -138,11 +133,8 @@
           <reference_price>
 <!--            <sweep_values debug_value="1.0">0.0,2.0</sweep_values>  &lt;!&ndash; $/MWe-h &ndash;&gt;  &lt;!&ndash; Hill et al. (2022) &ndash;&gt;-->
             <fixed_value>0</fixed_value>
-<!--            <fixed_value>-2</fixed_value>-->
+<!--            <fixed_value>-2e3</fixed_value>-->
           </reference_price>
-          <reference_driver>
-            <fixed_value>1e-3</fixed_value>
-          </reference_driver>
         </CashFlow>
       </economics>
     </Component>
@@ -174,15 +166,16 @@
       <stores resource="heat" dispatch="independent">
         <capacity resource="heat">
 <!--          <sweep_values debug_value="2.5">1.5, 4.0</sweep_values>-->
-          <sweep_values debug_value="2.5">0, 1.5, 2.5, 4.0</sweep_values>
+<!--          <sweep_values debug_value="2.5">0, 1.5, 2.5, 4.0</sweep_values>-->
+          <fixed_value>2.5</fixed_value>
         </capacity>
         <initial_stored>
           <fixed_value>0</fixed_value>
         </initial_stored>
-<!--        <RTE>-->
-<!--          <fixed_value>0.93</fixed_value>-->
-<!--        </RTE>-->
-        <RTE>0.93</RTE>
+        <RTE>
+          <fixed_value>0.93</fixed_value>
+        </RTE>
+        <!--<RTE>0.93</RTE>-->
       </stores>
       <economics>
         <lifetime>30</lifetime>
@@ -191,13 +184,10 @@
             <variable>TES_capacity</variable>
           </driver>
           <reference_price>
-<!--            <sweep_values debug_value="-5.0">-1.7,-10.3</sweep_values> &lt;!&ndash; 5-30 $/kWh_e (Mikkelson, 2022) @ 90% RTE, 38% BOP efficiency &ndash;&gt;-->
-            <fixed_value>-1.7</fixed_value>
-<!--            <fixed_value>-10.3</fixed_value>-->
+           <!-- <sweep_values debug_value="-5.0">-1.7,-10.3</sweep_values> &lt;!&ndash; 5-30 $/kWh_e (Mikkelson, 2022) @ 90% RTE, 38% BOP efficiency &ndash;&gt; -->
+            <fixed_value>-1.7e6</fixed_value>
+<!--            <fixed_value>-10.3e6</fixed_value>-->
           </reference_price>
-          <reference_driver>
-            <fixed_value>1e-6</fixed_value>
-          </reference_driver>
           <depreciate>15</depreciate>
         </CashFlow>
         <CashFlow name="FOM" type="repeating" period="year" taxable="True" inflation="none" mult_target="False">
@@ -206,12 +196,9 @@
           </driver>
           <reference_price>
 <!--            <sweep_values debug_value="-30">-14, -43</sweep_values>  &lt;!&ndash; $/MWh_th (Hill, 2022) &ndash;&gt;-->
-            <fixed_value>-14</fixed_value>
-<!--            <fixed_value>-43</fixed_value>-->
+            <fixed_value>-14e3</fixed_value>
+<!--            <fixed_value>-43e3</fixed_value>-->
           </reference_price>
-          <reference_driver>
-            <fixed_value>1e-3</fixed_value>
-          </reference_driver>
         </CashFlow>
         <CashFlow name="VOM" type="repeating" taxable="True" inflation="none" mult_target="False">
           <driver>
@@ -219,12 +206,10 @@
           </driver>
           <reference_price>
 <!--            <sweep_values debug_value="-15">-3, -29</sweep_values>  &lt;!&ndash; $/MWh_th (Hill, 2022) &ndash;&gt;-->
-<!--            <fixed_value>-3</fixed_value>-->
-            <fixed_value>-29</fixed_value>
+<!--            <fixed_value>-3e3</fixed_value>-->
+<!--            <fixed_value>-29e3</fixed_value>-->
+            <fixed_value>-16e3</fixed_value>
           </reference_price>
-          <reference_driver>
-            <fixed_value>1e-3</fixed_value>
-          </reference_driver>
         </CashFlow>
       </economics>
     </Component>

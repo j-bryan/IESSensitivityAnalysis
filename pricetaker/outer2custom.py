@@ -1,9 +1,14 @@
 import sys
 import os
+import shutil
 import xml.etree.ElementTree as ET
+import pandas as pd
 
 
 def outer2custom(xml_pth, csv_pth):
+    df = pd.read_csv(csv_pth)
+    custom_sampling_vars = list(df.columns)[:-2]
+
     tree = ET.parse(xml_pth)
     root = tree.getroot()
     
@@ -25,10 +30,10 @@ def outer2custom(xml_pth, csv_pth):
     grid_sampler = samplers.find('Grid')
     # Copy all <constant> subsubnodes from <Grid> to <CustomSampler>
     for child in grid_sampler:
-        if child.tag == 'constant':
-            custom_sampler.append(child)
-        elif child.tag == 'variable':
+        if child.get('name') in custom_sampling_vars or child.tag == 'variable':
             custom_sampler.append(ET.Element('variable', {'name': child.get('name')}))
+        elif child.tag == 'constant':
+            custom_sampler.append(child)
     # Add <CustomSampler> and delete <Grid>
     samplers.append(custom_sampler)
     samplers.remove(grid_sampler)
@@ -43,7 +48,8 @@ def outer2custom(xml_pth, csv_pth):
     # Write edited XML to file
     #with open('outer_custom.xml', 'w') as f:
     #    tree.write(f)
-    tree.write('outer_custom.xml')
+    shutil.copy2(xml_pth, xml_pth + '.backup')
+    tree.write(xml_pth)
 
 
 if __name__ == '__main__':
