@@ -1,0 +1,209 @@
+<HERON>
+  <!-- We used 6 hour storage media cost per unit energy reference for TES -->
+  <Case name="MISO_baseline_30yr">
+    <mode>sweep</mode>
+    <!--<debug>
+         <inner_samples>1</inner_samples>
+         <macro_steps>1</macro_steps>
+         <dispatch_plot>True</dispatch_plot>
+    </debug>-->
+    <data_handling>
+      <save_all_inner_metrics>True</save_all_inner_metrics>
+    </data_handling>
+    <num_arma_samples>128</num_arma_samples>
+    <parallel>
+      <outer>1</outer>
+      <inner>32</inner>
+    </parallel>
+    <result_statistics>
+      <percentile/>
+      <skewness/>
+      <kurtosis/>
+      <valueAtRisk/>
+    </result_statistics>
+    <time_discretization>
+      <year_variable>YEAR</year_variable>
+      <time_variable>HOUR</time_variable>
+      <end_time>364</end_time>
+      <num_steps>365</num_steps>
+    </time_discretization>
+    <economics>
+      <ProjectTime>30</ProjectTime>
+      <DiscountRate>0.08</DiscountRate>
+      <tax>0.25</tax>
+      <inflation>0.025</inflation>
+      <verbosity>50</verbosity>
+    </economics>
+    <dispatcher>
+      <pyomo>
+        <rolling_window_length>48</rolling_window_length>
+      </pyomo>
+    </dispatcher>
+  </Case>
+
+  <Components>
+    <!--PRODUCING COMPONENTS-->
+    <Component name="NPP">
+      <produces resource="heat" dispatch="fixed">
+        <capacity resource="heat">
+          <fixed_value>0.834</fixed_value>
+        </capacity>
+      </produces>
+      <economics>
+        <lifetime>60</lifetime>
+        <CashFlow name="capex" type="one-time" taxable="True" inflation="none" mult_target="False">  <!-- OCC from NPP construction, C2N#3 (Hansen 2022, Coal to Nuclear report) -->
+          <driver>
+            <variable>NPP_capacity</variable>
+          </driver>
+          <reference_price> <!-- [-1140e6, -1520e6] at 40% BOP eff -->
+            <fixed_value>-1330e6</fixed_value>
+          </reference_price>
+          <depreciate>15</depreciate>
+        </CashFlow>
+        <CashFlow name="FOM" type="repeating" period="year" taxable="True" inflation="none" mult_target="False">  <!-- FOM from C2N#3 (Hansen 2022, Coal to Nuclear report) -->
+          <driver>
+            <variable>NPP_capacity</variable>
+          </driver>
+          <reference_price> <!-- [-41.6e6, -48.0e6] at 40% BOP eff -->
+            <fixed_value>-44.8e6</fixed_value>
+          </reference_price>
+        </CashFlow>
+        <CashFlow name="VOM" type="repeating" taxable="True" inflation="none" mult_target="False">  <!-- VOM + Fuel Cost from C2N#3 (Hansen 2022, Coal to Nuclear report) -->
+          <driver>
+            <activity>heat</activity>
+          </driver>
+          <reference_price> <!-- [-6.6044e3, -8.2574e3] with 40% BOP eff -->
+            <fixed_value>-7.43e3</fixed_value>
+          </reference_price>
+        </CashFlow>
+      </economics>
+    </Component>
+
+    <Component name="NPP_unused"> <!-- helps keep simulations from breaking when NPP is sized too large for the BOP -->
+      <demands resource="heat" dispatch="independent">
+        <capacity resource="heat">
+          <fixed_value>-100e3</fixed_value>
+        </capacity>
+      </demands>
+      <economics>
+        <lifetime>1</lifetime>
+      </economics>
+    </Component>
+
+    <Component name="BOP">
+      <produces resource="electricity" dispatch="independent">
+        <consumes>heat</consumes>
+        <capacity resource="electricity">
+          <fixed_value>0.5</fixed_value>
+        </capacity>
+        <minimum resource="electricity">
+          <fixed_value>0.2</fixed_value>
+        </minimum>
+        <transfer>
+          <linear>
+            <rate resource="heat">-1</rate>
+            <rate resource="electricity">0.4</rate>
+          </linear>
+        </transfer>
+      </produces>
+      <economics>
+        <lifetime>20</lifetime>
+        <CashFlow name="capex" type="one-time" taxable="True" inflation="none" mult_target="False">
+          <driver>
+            <variable>BOP_capacity</variable>
+          </driver>
+          <reference_price> <!-- [-500e6, -700e6] (Hill, 2022) -->
+            <fixed_value>-600e6</fixed_value>
+          </reference_price>
+          <depreciate>15</depreciate>
+        </CashFlow>
+        <CashFlow name="FOM" type="repeating" period="year" taxable="True" inflation="none" mult_target="False">
+          <driver>
+            <variable>BOP_capacity</variable>
+          </driver>
+          <reference_price> <!-- [-40e6, -60e6] (Hill, 2022) -->
+            <fixed_value>-50e6</fixed_value>
+          </reference_price>
+        </CashFlow>
+        <CashFlow name="VOM" type="repeating"  taxable="True" inflation="none" mult_target="False">
+          <driver>
+            <activity>electricity</activity>
+          </driver>
+          <reference_price> <!-- [0, -2e3] (Hill, 2022) -->
+            <fixed_value>-1e3</fixed_value>
+          </reference_price>
+        </CashFlow>
+      </economics>
+    </Component>
+
+    <!--DEMANDING COMPONENTS-->
+    <Component name="grid">
+      <demands resource="electricity" dispatch="independent">
+        <capacity>
+          <!-- This is as large as possible sink -->
+          <fixed_value>-100e3</fixed_value>
+        </capacity>
+      </demands>
+      <economics>
+        <lifetime>1</lifetime>
+        <CashFlow name="grid_sales" type="repeating" taxable="True" inflation="none" mult_target="False">
+          <driver>
+            <activity>electricity</activity>
+            <multiplier>-1</multiplier>
+          </driver>
+          <reference_price>
+            <ARMA variable="PRICE">Load</ARMA>
+          </reference_price>
+        </CashFlow>
+      </economics>
+    </Component>
+
+    <!--STORAGE COMPONENTS-->
+    <Component name="TES">
+      <stores resource="heat" dispatch="independent">
+        <capacity resource="heat"> <!-- (500 - 345) * (boost time = 5.5 hr) / (BOP eff = 0.4) / (TES SQRT RTE = sqrt(0.93)) -->
+          <fixed_value>2.210</fixed_value>
+        </capacity>
+        <initial_stored>
+          <fixed_value>0</fixed_value>
+        </initial_stored>
+        <RTE>
+          <fixed_value>0.93</fixed_value>
+        </RTE>
+      </stores>
+      <economics>
+        <lifetime>30</lifetime>
+        <CashFlow name="capex" type="one-time" taxable="True" inflation="none" mult_target="False">
+          <driver>
+            <variable>TES_capacity</variable>
+          </driver>
+          <reference_price> <!-- [-1.929e6, -11.572e6] @ 93% RTE, 40% BOP eff, (Mikkelson, 2022) -->
+            <fixed_value>-6.75e6</fixed_value>
+          </reference_price>
+          <depreciate>15</depreciate>
+        </CashFlow>
+        <CashFlow name="FOM" type="repeating" period="year" taxable="True" inflation="none" mult_target="False">
+          <driver>
+            <variable>TES_capacity</variable>
+          </driver>
+          <reference_price> <!-- [-14e3, -43e3] (Hill, 2022) -->
+            <fixed_value>-28.5e3</fixed_value>
+          </reference_price>
+        </CashFlow>
+        <CashFlow name="VOM" type="repeating" taxable="True" inflation="none" mult_target="False">
+          <driver>
+            <activity tracking="discharge">heat</activity>
+          </driver>
+          <reference_price> <!-- [-3e3, -29e3] (Hill, 2022) -->
+            <fixed_value>-16e3</fixed_value>
+          </reference_price>
+        </CashFlow>
+      </economics>
+    </Component>
+
+  </Components>
+
+  <DataGenerators>
+    <ARMA name="Load" variable="TOTALLOAD,WIND,SOLAR,PRICE" evalMode="clustered">../../ARMA/MISO/arma.pk</ARMA>
+  </DataGenerators>
+</HERON>
