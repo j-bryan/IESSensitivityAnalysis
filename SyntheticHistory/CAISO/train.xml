@@ -1,0 +1,118 @@
+<Simulation verbosity="silent">
+  
+  <RunInfo>
+    <WorkingDir>.</WorkingDir>
+    <Sequence>load, train, meta, serialize, sample</Sequence>
+  </RunInfo>
+
+  <Files>
+    <Input name="input">Data.csv</Input>
+    <Input name="pk">arma.pk</Input>
+  </Files>
+
+  <Steps>
+    <IOStep name="load">
+      <Input class="Files" type="">input</Input>
+      <Output class="DataObjects" type="HistorySet">input</Output>
+    </IOStep>
+
+    <RomTrainer name="train">
+      <Input class="DataObjects" type="HistorySet">input</Input>
+      <Output class="Models" type="ROM">arma</Output>
+    </RomTrainer>
+
+    <IOStep name="meta">
+      <Input class="Models" type="ROM">arma</Input>
+      <Output class="DataObjects" type="DataSet">meta</Output>
+      <Output class="OutStreams" type="Print">romMeta</Output>
+    </IOStep>
+
+    <IOStep name="serialize">
+      <Input class="Models" type="ROM">arma</Input>
+      <Output class="Files" type="">pk</Output>
+    </IOStep>
+
+    <MultiRun name="sample">
+      <Input class="DataObjects" type="PointSet">placeholder</Input>
+      <Model class="Models" type="ROM">synth</Model>
+      <Sampler class="Samplers" type="MonteCarlo">mc</Sampler>
+      <Output class="DataObjects" type="DataSet">samples</Output>
+      <Output class="OutStreams" type="Print">samples</Output>
+    </MultiRun>
+  </Steps>
+
+  <DataObjects>
+    <PointSet name="placeholder">
+      <Input>scaling</Input>
+      <Output>OutputPlaceHolder</Output>
+    </PointSet>
+
+    <HistorySet name="input">
+      <Input>scaling,YEAR</Input>
+      <Output>TOTALLOAD,PRICE,WIND,SOLAR,HOUR</Output>
+      <options>
+        <pivotParameter>HOUR</pivotParameter>
+      </options>
+    </HistorySet>
+
+    <DataSet name="meta" />
+  </DataObjects>
+
+  <Models>
+    <ROM name="synth" subType="SyntheticHistory" seed="42"> <!-- fixed training seed gives repeatable model fits -->
+      <Target>HOUR,PRICE</Target>
+      <Features>scaling</Features>
+      <pivotParameter>HOUR</pivotParameter>
+      <fourier target="PRICE">
+        <periods>8760, 4380, 2190, 168, 24, 12, 6, 4, 3</periods>
+      </fourier>
+      <arma target="PRICE" seed='42'>
+        <SignalLag>1</SignalLag> <!-- P -->
+        <NoiseLag>0</NoiseLag>   <!-- Q -->
+      </arma>
+      <Segment grouping="cluster">
+        <macroParameter>YEAR</macroParameter>
+        <Classifier class="Models" type="PostProcessor">classifier</Classifier>
+        <subspace pivotLength="24" shift="zero">HOUR</subspace>
+        <evalMode>full</evalMode>
+        <evaluationClusterChoice>random</evaluationClusterChoice>
+      </Segment>
+    </ROM>
+    <PostProcessor name="classifier" subType="DataMining">
+      <KDD labelFeature="labels" lib="SciKitLearn">
+        <Features>PRICE</Features>
+        <SKLtype>cluster|KMeans</SKLtype>
+        <n_clusters>20</n_clusters>
+        <tol>1E-12</tol>
+        <init>k-means++</init>
+        <random_state>3</random_state>
+        <precompute_distances>True</precompute_distances>
+      </KDD>
+    </PostProcessor>
+  </Models>
+
+  <Samplers>
+    <MonteCarlo name="mc">
+      <samplerInit>
+        <limit>1</limit>
+        <initialSeed>42</initialSeed>
+      </samplerInit>
+      <constant name="scaling">1.0</constant>
+    </MonteCarlo>
+  </Samplers>
+
+  <OutStreams>
+    <Print name="romMeta">
+      <type>csv</type>
+      <source>meta</source>
+    </Print>
+    <HistorySet name="samples">
+      <Input>scaling</Input>
+      <Output>PRICE</Output>
+      <options>
+        <pivotParameter>HOUR</pivotParameter>
+      </options>
+    </HistorySet>
+  </OutStreams>
+
+</Simulation>
