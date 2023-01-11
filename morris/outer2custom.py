@@ -37,10 +37,14 @@ def outer2custom(xml_pth, csv_pth):
     # Add <CustomSampler> and delete <Grid>
     if 'random_seed' in df:
         custom_sampler.append(ET.Element('variable', {'name': 'random_seed'}))
+        
         code = root.find('.//Code[@name="raven"]')
         seed_alias = ET.Element('alias', {'variable': 'random_seed', 'type': 'input'})
         seed_alias.text = 'Samplers|MonteCarlo@name:mc_arma_dispatch|constant@name:random_seed'
         code.append(seed_alias)
+
+        groups = root.find('.//Group[@name="GRO_capacities"]')
+        groups.text = groups.text + ', random_seed'
 
     samplers.append(custom_sampler)
     samplers.remove(grid_sampler)

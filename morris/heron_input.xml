@@ -1,6 +1,6 @@
 <HERON>
   <!-- We used 6 hour storage media cost per unit energy reference for TES -->
-  <Case name="MISO_Morris_60samples_1yr">
+  <Case name="MISO_Sobol">
     <mode>sweep</mode>
     <!--<debug>
          <inner_samples>1</inner_samples>
@@ -10,22 +10,22 @@
     <data_handling>
       <save_all_inner_metrics>True</save_all_inner_metrics>
     </data_handling>
-    <num_arma_samples>4</num_arma_samples>
+    <num_arma_samples>1</num_arma_samples>
     <parallel>
-      <outer>2</outer>
-      <inner>4</inner>
+      <outer>64</outer>
+      <inner>1</inner>
     </parallel>
-    <result_statistics>
+    <!--<result_statistics>
       <percentile/>
       <skewness/>
       <kurtosis/>
       <valueAtRisk/>
-    </result_statistics>
+    </result_statistics>-->
     <time_discretization>
       <year_variable>YEAR</year_variable>
       <time_variable>HOUR</time_variable>
-      <end_time>364</end_time>
-      <num_steps>365</num_steps>
+      <end_time>39</end_time>
+      <num_steps>40</num_steps>
     </time_discretization>
     <economics>
       <ProjectTime>1</ProjectTime>
@@ -35,9 +35,7 @@
       <verbosity>50</verbosity>
     </economics>
     <dispatcher>
-      <pyomo>
-        <rolling_window_length>48</rolling_window_length>
-      </pyomo>
+      <pyomo/>
     </dispatcher>
   </Case>
 
@@ -204,6 +202,6 @@
   </Components>
 
   <DataGenerators>
-    <ARMA name="Load" variable="TOTALLOAD,WIND,SOLAR,PRICE" evalMode="clustered">../ARMA/MISO/arma.pk</ARMA>
+    <ARMA name="Load" variable="PRICE" evalMode="clustered">../ARMA/MISO/arma_price.pk</ARMA>
   </DataGenerators>
 </HERON>

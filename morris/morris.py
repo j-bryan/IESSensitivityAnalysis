@@ -45,6 +45,10 @@ def build_heron_xmls():
     pass
 
 
+def scale_random_seed(v, a=1, b=256):
+    return a + np.floor(v * (b - a + 1))
+
+
 def main():
     # read HERON model XML
     # generate points to sample
@@ -62,15 +66,38 @@ def main():
         'TES_capex_alpha': [-1.929e6, -11.572e6],
         'TES_FOM_alpha': [-14.0e3,-43.0e3],
         'TES_VOM_alpha': [-3e3, -29e3],
-        'TES_sqrt_rte': [0.4 ** 0.5, 0.93 ** 0.5]
+        'TES_sqrt_rte': [0.4 ** 0.5, 0.93 ** 0.5],
+        'random_seed': [0, 1.0]
     }
-    for opt_traj in [4, 8, 16, 32]:
+    # for opt_traj in [4, 8, 16, 32]:
+    
+    N = 256
+    morris_points = generate_morris_points(bounds, N, num_levels=128)
+    df = pd.DataFrame(morris_points, columns=list(bounds.keys()))
+    df['random_seed'] = scale_random_seed(df['random_seed'], a=1, b=256)
+
+    print(morris_points.shape)
+    print(df['random_seed'].sort_values().unique())
+
+    exit()
+
+    df['PointProbability'] = np.ones(len(df))
+    df['ProbabilityWeight'] = np.ones(len(df))
+    df.to_csv(f'samples{len(df)}_rng.csv', index=False)
+    """
+    for opt_traj in [32]:
         N = 200
         morris_points = generate_morris_points(bounds, N, optimal_trajectories=opt_traj)
         df = pd.DataFrame(morris_points, columns=list(bounds.keys()))
+        df['random_seed'] = scale_random_seed(df['random_seed'], a=1, b=256)
+
+        print(df['random_seed'].sort_values().unique())
+        exit()
+
         df['PointProbability'] = np.ones(len(df))
         df['ProbabilityWeight'] = np.ones(len(df))
-        df.to_csv(f'samples{len(df)}.csv', index=False)
+        df.to_csv(f'samples{len(df)}_rng.csv', index=False)
+    """
 
 
 if __name__ == '__main__':
