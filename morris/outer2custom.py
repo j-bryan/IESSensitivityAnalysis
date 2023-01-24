@@ -7,7 +7,7 @@ import pandas as pd
 
 def outer2custom(xml_pth, csv_pth):
     df = pd.read_csv(csv_pth)
-    custom_sampling_vars = list(df.columns)[:-2]
+    custom_sampling_vars = list(df.columns)
 
     tree = ET.parse(xml_pth)
     root = tree.getroot()
